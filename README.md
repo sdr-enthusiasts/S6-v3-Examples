@@ -23,3 +23,13 @@ Shebang lines will be corrected in the scripts.
 You will need to go through and potentially add additional dependencies to the `dependencies.d` files in the longrun services.
 
 All of the old files will be moved to the rootfs directory under a folder called `back`. You can then go through and delete the files that you don't need anymore.
+
+### Healthcheck notes
+
+If the HC file checks the `/run/s6/legacy-services` the path is patched to `/run/services`. If you specifically use Mike's `check_pid` stuff you may have to change the path instead look at `/etc/s6-overlay/scripts` for it to work. Additionally, if the HC script checks for abnormal deaths you will need to remove references to `/run` and change the find line to look something like
+
+```bash
+mapfile -t SERVICES < <(find /run/service -maxdepth 1 -not -name "*s6*" | tail +2)
+```
+
+I've chosen to not attempt to automate this in the migration script because each HC script is fairly bespoke and it would be difficult to account for all of the different ways that it could be written.
