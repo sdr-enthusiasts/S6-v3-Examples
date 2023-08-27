@@ -20,4 +20,6 @@ If you clone this repo you can use the `migrate.sh` script to migrate. Pass it t
 
 Shebang lines will be corrected in the scripts.
 
+You will need to go through and potentially add additional dependencies to the `dependencies.d` files in the longrun services.
+
 All of the old files will be moved to the rootfs directory under a folder called `back`. You can then go through and delete the files that you don't need anymore.

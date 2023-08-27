@@ -27,13 +27,16 @@ function move_services_d {
     if [ -f $file/run ]
     then
         cp $file/run $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
+        # replace #!/usr/bin/with-contenv bash with #!/command/with-contenv bash
         sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
         echo "Making $dir/etc/s6-overlay/s6-rc.d/scripts/$service executable" || exit 1
         chmod +x $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
     else
         echo "No run file. Skipping"
+        # create a .blank file in $dir/etc/s6-overlay/s6-rc.d/services
+        touch $dir/etc/s6-overlay/s6-rc.d/$service/.blank || exit 1
     fi
-    # replace #!/usr/bin/with-contenv bash with #!/command/with-contenv bash
+
     echo "Creating $dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d" || exit 1
     mkdir -p $dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d || exit 1
     # if we have any cont-init files, add them to the dependencies.d directory, else add base
