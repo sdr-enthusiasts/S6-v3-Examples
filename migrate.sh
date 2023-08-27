@@ -19,18 +19,18 @@ function move_services_d {
     mkdir -p $dir/etc/s6-overlay/s6-rc.d/$service || exit 1
     echo "Creating etc/s6-overlay/s6-rc.d/$service/type" || exit 1
     echo "longrun" > $dir/etc/s6-overlay/s6-rc.d/$service/type || exit 1
-    echo "Creating etc/s6-overlay/s6-rc.d/$service/up" || exit 1
-    echo "#!/bin/sh" > $dir/etc/s6-overlay/s6-rc.d/$service/up || exit 1
-    echo "exec $dir/etc/s6-overlay/s6-rc.d/scripts/$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/up || exit 1
-    echo "Moving $file to etc/s6-overlay/s6-rc.d/scripts/$service" || exit 1
+    echo "Creating etc/s6-overlay/s6-rc.d/$service/run" || exit 1
+    echo "#!/bin/sh" > $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
+    echo "exec /etc/s6-overlay/scripts/$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
+    echo "Moving $file to etc/s6-overlay/scripts/$service" || exit 1
     # if there is a run file, move it to the scripts directory
     if [ -f $file/run ]
     then
-        cp $file/run $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
+        cp $file/run $dir/etc/s6-overlay/scripts/$service || exit 1
         # replace #!/usr/bin/with-contenv bash with #!/command/with-contenv bash
-        sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
-        echo "Making $dir/etc/s6-overlay/s6-rc.d/scripts/$service executable" || exit 1
-        chmod +x $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
+        sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/scripts/$service || exit 1
+        echo "Making $dir/etc/s6-overlay/scripts/$service executable" || exit 1
+        chmod +x $dir/etc/s6-overlay/scripts/$service || exit 1
     else
         echo "No run file. Skipping"
         # create a .blank file in $dir/etc/s6-overlay/s6-rc.d/services
@@ -79,10 +79,13 @@ fi
 
 echo "Migrating $dir"
 
+echo "Ensuring $dir/etc/s6-overlay is cleaned out and (re)create the structure"
+rm -rf $dir/etc/s6-overlay || exit 1
+
 # create the new directory structure
 
 mkdir -p $dir/etc/s6-overlay/s6-rc.d/user/contents.d || exit 1
-mkdir -p $dir/etc/s6-overlay/s6-rc.d/scripts || exit 1
+mkdir -p $dir/etc/s6-overlay/scripts || exit 1
 
 # check and see if there are etc/cont-init.d files. if so, move them to etc/s6-overlay/s6-rc/scripts
 # for every file we find, create a file with the name of the service in etc/s6-overlay/user/contents.d
@@ -105,13 +108,13 @@ then
         echo "oneshot" > $dir/etc/s6-overlay/s6-rc.d/$service/type || exit 1
         echo "Creating etc/s6-overlay/s6-rc.d/$service/up" || exit 1
         echo "#!/bin/sh" > $dir/etc/s6-overlay/s6-rc.d/$service/up || exit 1
-        echo "exec $dir/etc/s6-overlay/s6-rc.d/scripts/$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/up || exit 1
-        echo "Moving $file to etc/s6-overlay/s6-rc.d/scripts/$service" || exit 1
-        cp $file $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
+        echo "exec /etc/s6-overlay/scripts/$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/up || exit 1
+        echo "Moving $file to etc/s6-overlay/scripts/$service" || exit 1
+        cp $file $dir/etc/s6-overlay/scripts/$service || exit 1
         # replace #!/usr/bin/with-contenv bash with #!/command/with-contenv bash
-        sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
-        echo "Making $dir/etc/s6-overlay/s6-rc.d/scripts/$service executable" || exit 1
-        chmod +x $dir/etc/s6-overlay/s6-rc.d/scripts/$service || exit 1
+        sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/scripts/$service || exit 1
+        echo "Making $dir/etc/s6-overlay/scripts/$service executable" || exit 1
+        chmod +x $dir/etc/s6-overlay/scripts/$service || exit 1
         # save the file name to an array
         cont_init_files+=($service) || exit 1
     done
@@ -162,3 +165,27 @@ mkdir -p $dir/back || exit 1
 mv -v $dir/etc/cont-init.d $dir/back || exit 1
 mv -v $dir/etc/services.d $dir/back || exit 1
 
+# we need to fix shebangs, make sure scripts are executable, and fix healthcheck legacy-services
+
+# loop through all of the files
+
+echo "Fixing shebangs, making scripts executable, and fixing healthcheck legacy-services"
+
+for file in $(find $dir -type f)
+do
+    # if it's a file and the path does include back
+    if [ -f $file ] && [[ $file != *"back"* ]]
+    then
+        echo "Fixing shebang for $file" || exit 1
+        sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $file || exit 1
+        sed -i 's/#!\/usr\/bin\/with-contenv sh/#!\/command\/with-contenv sh/g' $file || exit 1
+        sed -i 's/run\/s6\/legacy-services/run\/service/g' $file || exit 1
+
+        # if the file includes a shebang make it executable
+        if grep -q "#!" $file
+        then
+            echo "Making $file executable" || exit 1
+            chmod +x $file || exit 1
+        fi
+    fi
+done
