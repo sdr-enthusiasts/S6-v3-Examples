@@ -162,7 +162,14 @@ then
 fi
 
 mkdir -p $dir/back || exit 1
-mv -v $dir/etc/cont-init.d $dir/back || exit 1
+
+if [ -d $dir/etc/cont-init.d ]
+then
+    echo "Moving $dir/etc/cont-init.d to $dir/back" || exit 1
+    mv -v $dir/etc/cont-init.d $dir/back || exit 1
+fi
+
+echo "Moving $dir/etc/services.d to $dir/back" || exit 1
 mv -v $dir/etc/services.d $dir/back || exit 1
 
 # we need to fix shebangs, make sure scripts are executable, and fix healthcheck legacy-services
