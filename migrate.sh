@@ -12,7 +12,7 @@
 cont_init_files=()
 
 function move_services_d {
-    service=$(basename $file)
+    service=$(basename $1)
     echo "Creating etc/s6-overlay/s6-rc.d/user/contents.d/$service" || exit 1
     touch $dir/etc/s6-overlay/s6-rc.d/user/contents.d/$service || exit 1
     echo "Creating etc/s6-overlay/s6-rc.d/$service" || exit 1
@@ -24,9 +24,9 @@ function move_services_d {
     echo "exec /etc/s6-overlay/scripts/$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
     echo "Moving $file to etc/s6-overlay/scripts/$service" || exit 1
     # if there is a run file, move it to the scripts directory
-    if [ -f $file/run ]
+    if [ -f $1/run ]
     then
-        cp $file/run $dir/etc/s6-overlay/scripts/$service || exit 1
+        cp $1/run $dir/etc/s6-overlay/scripts/$service || exit 1
         # replace #!/usr/bin/with-contenv bash with #!/command/with-contenv bash
         sed -i 's/#!\/usr\/bin\/with-contenv bash/#!\/command\/with-contenv bash/g' $dir/etc/s6-overlay/scripts/$service || exit 1
         echo "Making $dir/etc/s6-overlay/scripts/$service executable" || exit 1
@@ -157,6 +157,13 @@ then
                 service=$(basename $subfile) || exit 1
                 echo "Creating $dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d/$service_parent" || exit 1
                 touch $dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d/$service_parent || exit 1
+
+                # now ensure the name is unqiue and refers to the parent
+                rm $dir/etc/s6-overlay/s6-rc.d/$service/run
+                echo "#!/bin/sh" > $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
+                echo "exec /etc/s6-overlay/scripts/$service_parent-$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
+                mv $dir/etc/s6-overlay/scripts/$service $dir/etc/s6-overlay/scripts/$service_parent-$service || exit 1
+                mv $dir/etc/s6-overlay/s6-rc.d/$service $dir/etc/s6-overlay/s6-rc.d/$service_parent-$service || exit 1
             fi
         done
     done
