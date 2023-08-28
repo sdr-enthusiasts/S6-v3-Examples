@@ -33,3 +33,9 @@ mapfile -t SERVICES < <(find /run/service -maxdepth 1 -not -name "*s6*" | tail +
 ```
 
 I've chosen to not attempt to automate this in the migration script because each HC script is fairly bespoke and it would be difficult to account for all of the different ways that it could be written.
+
+## Resources
+
+* [Tutorial](https://darkghosthunter.medium.com/how-to-understand-s6-overlay-v3-95c81c04f075)
+* [S6 Github](https://github.com/just-containers/s6-overlay)
+* [S6 Github v2 to v3 Migration Guide](https://github.com/just-containers/s6-overlay/blob/master/MOVING-TO-V3.md)
