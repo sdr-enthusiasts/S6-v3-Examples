@@ -164,6 +164,7 @@ then
                 echo "exec /etc/s6-overlay/scripts/$service_parent-$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
                 mv $dir/etc/s6-overlay/scripts/$service $dir/etc/s6-overlay/scripts/$service_parent-$service || exit 1
                 mv $dir/etc/s6-overlay/s6-rc.d/$service $dir/etc/s6-overlay/s6-rc.d/$service_parent-$service || exit 1
+                mv $dir/etc/s6-overlay/s6-rc.d/user/contents.d/$service $dir/etc/s6-overlay/user/contents.d/$service_parent-$service || exit 1
             fi
         done
     done
