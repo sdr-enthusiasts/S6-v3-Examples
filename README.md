@@ -13,6 +13,7 @@ The directory structure is a basic setup. In each of the `up` files, call the ac
 * `longrun` should be used for any service that we previously had in a `services.d`
 * `oneshot` should be used for any service that we previously had in a `cont-init.d`
 * If you add a new service, you need to start it up by including a file with the name of the service in the `user/contents.d` directory.
+* `cont-finish.d` is NOT migrated. See below for more.
 
 ## How to migrate
 
@@ -33,6 +34,16 @@ mapfile -t SERVICES < <(find /run/service -maxdepth 1 -not -name "*s6*" | tail +
 ```
 
 I've chosen to not attempt to automate this in the migration script because each HC script is fairly bespoke and it would be difficult to account for all of the different ways that it could be written.
+
+### cont-finish.d notes
+
+cont-finish.d requires a bit of thought in how to migrate, so it'll be a manual process. Likely, we have tied a cont-finish.d process to a cont-init.d process, so the appropriate best course of action will be to move the cont-finish.d script to the `/etc/s6-overlay/scripts/` directory and add it to the `down` file of the one-shot that it should be paired with. If it is a cont-init.d process that does not have a cont-init script that it is paired with, create a new oneshot service, with an empty up file and call the script in the down file.
+
+If the cont-finish.d script is needed for a longrun service, then it should be added to the `finish` file of the longrun service. This finish file is called *EVERY* time the service is stopped, so it should be used with caution. Likely, you will want to add exit code checks to the script to make sure that it only runs when it should.
+
+To summarize, if the service is a oneshot the down script is called only when the container is stopped. If the service is a longrun the finish script is called every time the service is stopped, which may or may not be a container down.
+
+See [this](https://github.com/just-containers/s6-overlay#executing-initialization-and-finalization-tasks) for more info.
 
 ## Resources
 

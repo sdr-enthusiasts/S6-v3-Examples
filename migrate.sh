@@ -77,6 +77,16 @@ then
     exit 1
 fi
 
+if [ -d $dir/etc/services.d/cont-finish.d]
+then
+    echo "*********************************************************************"
+    echo "WARNING: The directory $dir/etc/services.d/cont-finish.d exists."
+    echo "This directory will be moved to $dir/back. Please ensure that you"
+    echo "move the files in this directory to the appropriate location in"
+    echo "the new directory structure."
+    echo "*********************************************************************"
+fi
+
 echo "Migrating $dir"
 
 echo "Ensuring $dir/etc/s6-overlay is cleaned out and (re)create the structure"
