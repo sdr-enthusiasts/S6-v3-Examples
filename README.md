@@ -8,7 +8,7 @@ The directory structure is a basic setup. In each of the `up` files, call the ac
 
 ## Notes
 
-* `dependencies.d` is a directory that contains the dependencies for the service. Should be `base` if there is no dependency, or a file with the name of the service. Multiple services can be specified and should be their own file.
+* `dependencies.d` is a directory that contains the dependencies for the service. It appears to not be required for `oneshot`, and not sure if you could add it to stack cont-init deps. It is required for `longrun`. Should be `base` if there is no dependency, or a file with the name of the service. Multiple services can be specified and should be their own file.
 * `down` is omitted for `longrun`, but it can be included if there is a need to do something when the service is stopped.
 * `longrun` should be used for any service that we previously had in a `services.d`
 * `oneshot` should be used for any service that we previously had in a `cont-init.d`
