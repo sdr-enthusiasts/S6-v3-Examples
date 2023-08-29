@@ -164,7 +164,7 @@ then
                 echo "exec /etc/s6-overlay/scripts/$service_parent-$service" >> $dir/etc/s6-overlay/s6-rc.d/$service/run || exit 1
                 mv $dir/etc/s6-overlay/scripts/$service $dir/etc/s6-overlay/scripts/$service_parent-$service || exit 1
                 mv $dir/etc/s6-overlay/s6-rc.d/$service $dir/etc/s6-overlay/s6-rc.d/$service_parent-$service || exit 1
-                mv $dir/etc/s6-overlay/s6-rc.d/user/contents.d/$service $dir/etc/s6-overlay/user/contents.d/$service_parent-$service || exit 1
+                mv $dir/etc/s6-overlay/s6-rc.d/user/contents.d/$service $dir/etc/s6-overlay/s6-rc.d/user/contents.d/$service_parent-$service || exit 1
             fi
         done
     done
@@ -203,6 +203,7 @@ do
     then
         echo "Fixing shebang for $file" || exit 1
         sed -i 's/#!\/usr\/bin\/with-contenv/#!\/command\/with-contenv/g' $file || exit 1
+        sed -i 's/#!\/usr\/bin\/env bash/#!\/command\/with-contenv/g' $file || exit 1
         sed -i 's/run\/s6\/legacy-services/run\/service/g' $file || exit 1
 
         # if the file includes a shebang make it executable
