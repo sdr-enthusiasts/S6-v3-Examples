@@ -203,7 +203,7 @@ do
     then
         echo "Fixing shebang for $file" || exit 1
         sed -i 's/#!\/usr\/bin\/with-contenv/#!\/command\/with-contenv/g' $file || exit 1
-        sed -i 's/#!\/usr\/bin\/env bash/#!\/command\/with-contenv/g' $file || exit 1
+        sed -i 's/#!\/usr\/bin\/env/#!\/command\/with-contenv/g' $file || exit 1
         sed -i 's/run\/s6\/legacy-services/run\/service/g' $file || exit 1
 
         # if the file includes a shebang make it executable
