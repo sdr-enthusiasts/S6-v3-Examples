@@ -128,6 +128,23 @@ then
         # save the file name to an array
         cont_init_files+=($service) || exit 1
     done
+    
+    echo "Fixing dependencies and execution order for etc/cont-init.d"
+    # (ls sorts by default in alpha order, which is what we want)
+    # shellcheck disable=SC2207,SC2011
+    list=($(ls "$dir/etc/services.d/cont-init.d/"|xargs))
+    # iterate through the list of files starting from the second file
+    for service in "${list[@]:1}"; do
+        mkdir -p "$dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d" || exit 1
+        echo -n "dir $service dependencies: "
+        # now make dependency files for each of the predecessors:
+        for dependency in "${list[@]}"; do
+            if [[ "$dependency" == "$name" ]]; then break; fi
+            echo -n "$dependency "
+            touch "$dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d/$dependency" || exit 1
+        done
+        echo ""
+    done
 fi
 
 # check and see if there are etc/services.d files. if so, move them to etc/s6-overlay/s6-rc.d/user/contents.d
