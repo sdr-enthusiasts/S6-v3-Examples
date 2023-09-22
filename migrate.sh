@@ -77,7 +77,7 @@ then
     exit 1
 fi
 
-if [ -d $dir/etc/services.d/cont-finish.d]
+if [ -d $dir/etc/services.d/cont-finish.d ]
 then
     echo "*********************************************************************"
     echo "WARNING: The directory $dir/etc/services.d/cont-finish.d exists."
@@ -128,7 +128,7 @@ then
         # save the file name to an array
         cont_init_files+=($service) || exit 1
     done
-    
+
     echo "Fixing dependencies and execution order for etc/cont-init.d"
     # (ls sorts by default in alpha order, which is what we want)
     # shellcheck disable=SC2207,SC2011
