@@ -139,7 +139,7 @@ then
         echo -n "dir $service dependencies: "
         # now make dependency files for each of the predecessors:
         for dependency in "${list[@]}"; do
-            if [[ "$dependency" == "$name" ]]; then break; fi
+            if [[ "$dependency" == "$service" ]]; then break; fi
             echo -n "$dependency "
             touch "$dir/etc/s6-overlay/s6-rc.d/$service/dependencies.d/$dependency" || exit 1
         done
